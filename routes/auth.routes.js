@@ -1,9 +1,7 @@
-// routes/auth.routes.js
 const { Router } = require('express');
 const router = new Router();
 const bcrypt = require('bcryptjs');
 const User = require('../models/User.model');
-
 
 // POST route ==> to save the log-in info with its JWT
 router.post("/", async (req, res) => {
