@@ -12,7 +12,11 @@ const taskSchema = new mongoose.Schema({
   },
   dueDate: {
     type: Date,
-    default: Date.now,
+    default: function() {
+        const sevenDaysFromNow = new Date();
+        sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+        return sevenDaysFromNow;
+      },
   },
   status: {
     type: String,
