@@ -38,6 +38,7 @@ router.post('/', async (req, res) => {
 // POST route ==> to save the sign-up information
 router.post('/signup', async (req, res) => {
   const { email, password, username } = req.body;
+  console.log(req.body);
   if (!email || !password || !username) {
     res.status(400).json({ message: 'Provide all the fields, please (email, password, and username).' });
     return;
@@ -51,11 +52,11 @@ router.post('/signup', async (req, res) => {
   }
 
   // Use password required formatting
-  const passwordRegex = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}/;
-  if (!passwordRegex.test(password)) {
-    res.status(400).json({ message: 'Password must have at least 6 characters and contain at least one number, one lowercase, and one uppercase letter.' });
-    return;
-  }
+//   const passwordRegex = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}/;
+//   if (!passwordRegex.test(password)) {
+//     res.status(400).json({ message: 'Password must have at least 6 characters and contain at least one number, one lowercase, and one uppercase letter.' });
+//     return;
+//   }
 
   try {
     let userExists = await User.findOne({ username });

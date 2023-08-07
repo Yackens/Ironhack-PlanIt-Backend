@@ -9,8 +9,6 @@ require("./db");
 // https://www.npmjs.com/package/express
 const express = require("express");
 const { isAuthenticated } = require("./middleware/jwt.middleware");
-const { isLoggedIn } = require("./middleware/login.middleware");
-
 
 const app = express();
 
@@ -22,10 +20,10 @@ const indexRoutes = require("./routes/index.routes");
 app.use("/api", indexRoutes);
 
 const categoryRouter = require("./routes/categories.routes");
-app.use("/api", isAuthenticated, isLoggedIn, categoryRouter);
- 
+app.use("/api", isAuthenticated, categoryRouter);
+
 const taskRouter = require("./routes/tasks.routes");
-app.use("/api", isAuthenticated, isLoggedIn, taskRouter);   
+app.use("/api", isAuthenticated, taskRouter);   
 
 const authRouter = require("./routes/auth.routes");
 app.use("/auth", authRouter);

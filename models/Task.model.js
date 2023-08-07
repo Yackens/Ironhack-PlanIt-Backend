@@ -12,7 +12,7 @@ const taskSchema = new mongoose.Schema({
   },
   dueDate: {
     type: Date,
-    default: Date.now+7,
+    default: Date.now,
   },
   status: {
     type: String,
