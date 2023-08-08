@@ -14,7 +14,7 @@ router.get('/categories', async (req, res) => {
 });
 
 // POST route ==>  Creates a new category
-router.post("/categories", async (req, res) => {
+router.post("/categories/new", async (req, res) => {
     const { name } = req.body;
     try {
         let response = await Category.create({name, tasks: []});
