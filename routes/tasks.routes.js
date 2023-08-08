@@ -16,8 +16,8 @@ router.get('/tasks', async (req, res) => {
 
 // POST /api/tasks  -  Creates a new task
 router.post("/tasks", async (req, res) => {
-  const { title, description, dueDate, status, createdAt} = req.body;
-  const { categoryId } = req.params;
+  const { title, description, categoryId, dueDate, status, createdAt} = req.body;
+  //const { categoryId } = req.params;
 
   try {
     let newTask = await Task.create({ title, description, dueDate, status, category: categoryId, createdAt })
