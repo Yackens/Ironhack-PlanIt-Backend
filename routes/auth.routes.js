@@ -3,6 +3,7 @@ const router = new Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User.model');
+const { isAuthenticated } = require("../middleware/jwt.middleware");
     
 // POST route ==> to save the log-in info
 router.post('/login', async (req, res) => {
