@@ -3,21 +3,9 @@ const router = new Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User.model');
-
-// GET route ==> to show the email and username
-router.get('/', async (req, res) => {
-    const { username, email } = req.query;
-    try {
-        let response = await Category.findOne({username})
-        return res.status(200).json(response);
-    } catch(err) {
-        console.log(err);
-        res.status(500).json({ message: "Internal Server Error" })
-    }
-  });
     
 // POST route ==> to save the log-in info
-router.post('/', async (req, res) => {
+router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
