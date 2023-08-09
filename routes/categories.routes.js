@@ -11,7 +11,7 @@ router.get('/categories', async (req, res) => {
         console.log(err);
         res.status(500).json({ message: "Internal Server Error" })
     }
-});
+}); 
 
 // POST route ==>  Creates a new category
 router.post("/categories/new", async (req, res) => {
@@ -52,7 +52,7 @@ router.delete('/categories/:categoryId', async (req, res) => {
     }
     try {
         await Category.findByIdAndRemove(categoryId);
-        return res.status(200).json({message: `Category with ${categoryId} is removed successfully.` });
+        return res.status(204).json({message: `Category with ${categoryId} is removed successfully.` });
     } catch {
         console.log(err);
         return res.status(500).json({ message: "Internal Server Error" });

@@ -56,7 +56,7 @@ router.delete('/tasks/:taskId', async (req, res) => {
     }
     try {
         await Task.findByIdAndRemove(taskId);
-        return res.status(200).json({message: `Category with ${taskId} is removed successfully.` });
+        return res.status(204).json({message: `Category with ${taskId} is removed successfully.` });
     } catch {
         console.log(err);
         return res.status(500).json({ message: "Internal Server Error" });
