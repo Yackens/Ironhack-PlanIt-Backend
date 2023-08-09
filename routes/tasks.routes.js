@@ -16,7 +16,7 @@ router.get('/tasks', isAuthenticated, async (req, res) => {
 });
 
 // POST /api/tasks  -  Creates a new task
-router.post("/tasks/new", async (req, res) => {
+router.post("/tasks/new", isAuthenticated, async (req, res) => {
   const { title, description, categoryId, dueDate, status, createdAt} = req.body;
   //const { categoryId } = req.params;
 
@@ -31,7 +31,7 @@ router.post("/tasks/new", async (req, res) => {
 });
 
 // PUT route ==>  Updates Tasks by Id
-router.put('/tasks/:taskId', async (req, res) => {
+router.put('/tasks/:taskId', isAuthenticated, async (req, res) => {
     const { taskId } = req.params;
    
     if (!mongoose.Types.ObjectId.isValid(taskId)) {
@@ -48,7 +48,7 @@ router.put('/tasks/:taskId', async (req, res) => {
 });
 
 // DELETE route ==>  Delete Task by Id
-router.delete('/tasks/:taskId', async (req, res) => {
+router.delete('/tasks/:taskId', isAuthenticated, async (req, res) => {
     const { taskId } = req.params;
    
     if (!mongoose.Types.ObjectId.isValid(taskId)) {

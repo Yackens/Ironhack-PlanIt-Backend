@@ -15,7 +15,7 @@ router.get('/categories', isAuthenticated, async (req, res) => {
 }); 
 
 // POST route ==>  Creates a new category
-router.post("/categories/new", async (req, res) => {
+router.post("/categories/new", isAuthenticated, async (req, res) => {
     const { name } = req.body;
     try {
         let response = await Category.create({name, tasks: []});
@@ -27,7 +27,7 @@ router.post("/categories/new", async (req, res) => {
 });
 
 // PUT route ==>  Updates Category by Id
-router.put('/categories/:categoryId', async (req, res) => {
+router.put('/categories/:categoryId', isAuthenticated, async (req, res) => {
     const { categoryId } = req.params;
    
     if (!mongoose.Types.ObjectId.isValid(categoryId)) {
@@ -44,7 +44,7 @@ router.put('/categories/:categoryId', async (req, res) => {
 });
 
 // DELETE route ==>  Delete Category by Id
-router.delete('/categories/:categoryId', async (req, res) => {
+router.delete('/categories/:categoryId', isAuthenticated, async (req, res) => {
     const { categoryId } = req.params;
    
     if (!mongoose.Types.ObjectId.isValid(categoryId)) {
