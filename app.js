@@ -20,10 +20,10 @@ const indexRoutes = require("./routes/index.routes");
 app.use("/api", indexRoutes);
 
 const categoryRouter = require("./routes/categories.routes");
-app.use("/api", isAuthenticated, categoryRouter);
+app.use("/api", categoryRouter);
 
 const taskRouter = require("./routes/tasks.routes");
-app.use("/api", isAuthenticated, taskRouter);   
+app.use("/api", taskRouter);   
 
 const authRouter = require("./routes/auth.routes");
 app.use("/auth", authRouter);
