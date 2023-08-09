@@ -2,9 +2,10 @@ const router = require("express").Router();
 const mongoose = require('mongoose');
 const Task = require("../models/Task.model");
 const Category = require("../models/Category.model");
+const { isAuthenticated } = require("./middleware/jwt.middleware");
 
 // GET route ==>  Get all tasks within category
-router.get('/tasks', async (req, res) => {
+router.get('/tasks', isAuthenticated, async (req, res) => {
     try {
         let response = await Task.find()
         return res.status(200).json(response);

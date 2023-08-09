@@ -1,9 +1,10 @@
 const router = require("express").Router();
 const mongoose = require('mongoose');
 const Category = require("../models/Category.model");
+const { isAuthenticated } = require("./middleware/jwt.middleware");
 
 // GET route ==>  Get all the categories
-router.get('/categories', async (req, res) => {
+router.get('/categories', isAuthenticated, async (req, res) => {
     try {
         let response = await Category.find().populate("tasks")
         return res.status(200).json(response);
