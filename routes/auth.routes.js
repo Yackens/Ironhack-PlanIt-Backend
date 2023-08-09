@@ -26,7 +26,7 @@ router.post('/login', async (req, res) => {
         algorithm: 'HS256',
         expiresIn: '6h',
       });
-      return res.status(200).json({ authToken: authToken });
+      return res.status(200).json({ token: authToken });
     } else {
       return res.status(400).json({ message: 'The credentials are incorrect. Please, try again.' });
     }
