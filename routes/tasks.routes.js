@@ -2,10 +2,9 @@ const router = require("express").Router();
 const mongoose = require('mongoose');
 const Task = require("../models/Task.model");
 const Category = require("../models/Category.model");
-const { isAuthenticated } = require("../middleware/jwt.middleware");
 
 // GET route ==>  Get all tasks within category
-router.get('/tasks', isAuthenticated, async (req, res) => {
+router.get('/tasks', async (req, res) => {
     try {
         let response = await Task.find()
         return res.status(200).json(response);
@@ -16,13 +15,12 @@ router.get('/tasks', isAuthenticated, async (req, res) => {
 });
 
 // POST /api/tasks  -  Creates a new task
-router.post("/tasks/new", isAuthenticated, async (req, res) => {
-  const { title, description, categoryId, dueDate, status, createdAt} = req.body;
-  //const { categoryId } = req.params;
+router.post("/tasks/new", async (req, res) => {
+  const { title, description, category, dueDate, status, createdAt} = req.body;
 
   try {
-    let newTask = await Task.create({ title, description, dueDate, status, category: categoryId, createdAt })
-    let updateCategory = await Category.findByIdAndUpdate(categoryId, { $push: { tasks: newTask._id } } );
+    let newTask = await Task.create({ title, description, dueDate, status, category, createdAt })
+    let updateCategory = await Category.findByIdAndUpdate(category, { $push: { tasks: newTask._id } } );
     return res.status(201).json({newTask, updateCategory});
 } catch(err) {
     console.log(err);
@@ -31,7 +29,7 @@ router.post("/tasks/new", isAuthenticated, async (req, res) => {
 });
 
 // PUT route ==>  Updates Tasks by Id
-router.put('/tasks/:taskId', isAuthenticated, async (req, res) => {
+router.put('/tasks/:taskId', async (req, res) => {
     const { taskId } = req.params;
    
     if (!mongoose.Types.ObjectId.isValid(taskId)) {
@@ -48,7 +46,7 @@ router.put('/tasks/:taskId', isAuthenticated, async (req, res) => {
 });
 
 // DELETE route ==>  Delete Task by Id
-router.delete('/tasks/:taskId', isAuthenticated, async (req, res) => {
+router.delete('/tasks/:taskId', async (req, res) => {
     const { taskId } = req.params;
    
     if (!mongoose.Types.ObjectId.isValid(taskId)) {

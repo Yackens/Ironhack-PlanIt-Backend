@@ -16,7 +16,7 @@ router.post('/login', async (req, res) => {
   try {
     const foundUser = await User.findOne({ username });
     if (!foundUser) {
-      return res.status(400).json({ message: 'The username is already in use. Please, try a new one.' });
+      return res.status(400).json({ message: 'The credentials are incorrect. please try again.' });
     }
 
     if (bcrypt.compareSync(password, foundUser.password)) {
