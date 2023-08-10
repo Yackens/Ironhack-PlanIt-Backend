@@ -13,6 +13,23 @@ router.get('/categories', async (req, res) => {
     }
 }); 
 
+// GET route ==> Search categories by name
+router.get('/categories/search', async (req, res) => {
+    try {
+        const { q } = req.query;
+
+        // Use a regex pattern for case-insensitive search
+        const searchPattern = new RegExp(q, 'i');
+
+        const response = await Category.find({ name: searchPattern });
+
+        return res.status(200).json(response);
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+});
+
 // POST route ==>  Creates a new category
 router.post("/categories/new", async (req, res) => {
     const { name } = req.body;
