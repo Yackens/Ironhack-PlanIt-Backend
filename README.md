@@ -30,7 +30,7 @@ The User model represents an application user. Users have attributes like email,
 
 ### Routes
 We've meticulously crafted various routes that serve as the primary means of interacting with our application's data through the REST API.
-***
+*
 **/auth**: Authentication routes for user sign-up, log-in, log-out, and verification.
 ***
 **/api/username**: Retrieve the username of the authenticated user.
