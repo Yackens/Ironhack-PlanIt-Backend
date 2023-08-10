@@ -4,7 +4,23 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User.model');
 const { isAuthenticated } = require("../middleware/jwt.middleware");
+
+// GET route ==> get the username of the authenticated user
+router.get('/username', isAuthenticated, async (req, res) => {
+  try {
+    const user = await User.findById(req.payload.user);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
     
+    const { username } = user;
+    res.status(200).json({ username });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
 // POST route ==> to save the log-in info
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
@@ -20,12 +36,12 @@ router.post('/login', async (req, res) => {
     }
 
     if (bcrypt.compareSync(password, foundUser.password)) {
-      const { email, name } = foundUser;
-      const payload = { email, name };
-      const authToken = jwt.sign(payload, process.env.TOKEN_SECRET, {
-        algorithm: 'HS256',
-        expiresIn: '6h',
-      });
+      const { email, username } = foundUser;
+      const payload = { email, username };
+      const authToken = jwt.sign({
+        expiresIn: "6h",
+        user: foundUser._id
+      }, process.env.TOKEN_SECRET, {algorithm: "HS256"});
       return res.status(200).json({ token: authToken });
     } else {
       return res.status(400).json({ message: 'The credentials are incorrect. Please, try again.' });
@@ -79,15 +95,13 @@ router.post('/signup', async (req, res) => {
 });
 
 // GET route ==> verify you are authenticated
-router.get('/verify', isAuthenticated, (req, res, next) => {       // <== CREATE NEW ROUTE
+router.get('/verify', isAuthenticated, async (req, res, next) => {
  
-  // If JWT token is valid the payload gets decoded by the
-  // isAuthenticated middleware and made available on `req.payload`
   console.log(`req.payload`, req.payload);
- 
-  // Send back the object with user data
-  // previously set as the token payload
-  res.status(200).json(req.payload);
+  const user = await User.findById(req.payload.user);
+  const userSent = user._doc;
+  delete userSent.password;
+  res.status(200).json(userSent);
 });
 
 module.exports = router;
