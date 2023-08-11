@@ -2,6 +2,7 @@ const router = require("express").Router();
 const mongoose = require('mongoose');
 const Category = require("../models/Category.model");
 
+
 // GET route ==>  Get all the categories
 router.get('/categories', async (req, res) => {
     try {
