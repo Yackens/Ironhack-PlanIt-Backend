@@ -5,6 +5,7 @@ const Category = require("../models/Category.model");
 
 // GET route ==>  Get all tasks within category
 router.get('/tasks/:categoryId', async (req, res) => {
+    const userId = req.payload.user;
     const { categoryId } = req.params;
     try {
         // Find the category by its _id
@@ -15,7 +16,7 @@ router.get('/tasks/:categoryId', async (req, res) => {
         }
 
         // Find tasks that have the matching category reference
-        const tasks = await Task.find({ category: categoryId });
+        const tasks = await Task.find({ category: categoryId, createdBy: userId });
 
         return res.status(200).json(tasks);
     } catch (err) {
@@ -45,9 +46,10 @@ router.get('/tasks/:taskId', async (req, res) => {
 // POST /api/tasks  -  Creates a new task
 router.post("/tasks/new", async (req, res) => {
   const { title, description, category, dueDate, status, createdAt} = req.body;
+  const createdBy = req.payload.user;
 
   try {
-    let newTask = await Task.create({ title, description, dueDate, status, category, createdAt })
+    let newTask = await Task.create({ title, description, dueDate, status, category, createdAt, createdBy})
     let updateCategory = await Category.findByIdAndUpdate(category, { $push: { tasks: newTask._id } } );
     return res.status(201).json({newTask, updateCategory});
 } catch(err) {

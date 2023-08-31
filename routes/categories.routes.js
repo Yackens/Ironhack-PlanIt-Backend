@@ -4,8 +4,11 @@ const Category = require("../models/Category.model");
 
 // GET route ==>  Get all the categories
 router.get('/categories', async (req, res) => {
+    console.log(req.user);
+    const userId = req.user.username;
+    console.log(userId)
     try {
-        let response = await Category.find().populate("tasks")
+        let response = await Category.find({createdBy: userId}).populate("tasks")
         return res.status(200).json(response);
     } catch(err) {
         console.log(err);
@@ -33,8 +36,10 @@ router.get('/categories/search', async (req, res) => {
 // POST route ==>  Creates a new category
 router.post("/categories/new", async (req, res) => {
     const { name } = req.body;
+    const createdBy = req.payload.user;
+    
     try {
-        let response = await Category.create({name, tasks: []});
+        let response = await Category.create({name, createdBy, tasks: [], });
         return res.status(201).json(response);
     } catch(err) {
         console.log(err);
