@@ -1,10 +1,13 @@
 const mongoose = require('mongoose');
 
 const categorySchema = new mongoose.Schema({
-  name: {
+  userPrefixName: {
     type: String,
     required: true,
-    unique: true,
+    trim: true,
+  },
+  name: {
+    type: String,
     trim: true,
   },
   tasks: [{

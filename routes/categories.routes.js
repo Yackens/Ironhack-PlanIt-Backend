@@ -1,12 +1,11 @@
 const router = require("express").Router();
 const mongoose = require('mongoose');
 const Category = require("../models/Category.model");
+const User = require("../models/User.model");
 
 // GET route ==>  Get all the categories
 router.get('/categories', async (req, res) => {
-    console.log(req.user);
-    const userId = req.user.username;
-    console.log(userId)
+    const userId = req.payload.user;
     try {
         let response = await Category.find({createdBy: userId}).populate("tasks")
         return res.status(200).json(response);
@@ -14,17 +13,18 @@ router.get('/categories', async (req, res) => {
         console.log(err);
         res.status(500).json({ message: "Internal Server Error" })
     }
-}); 
+});
 
 // GET route ==> Search categories by name
 router.get('/categories/search', async (req, res) => {
-    try {
-        const { q } = req.query;
+    const userId = req.payload.user;
+    const { q } = req.query;
 
+    try {
         // Use a regex pattern for case-insensitive search
         const searchPattern = new RegExp(q, 'i');
 
-        const response = await Category.find({ name: searchPattern });
+        const response = await Category.find({createdBy: userId, name: searchPattern });
 
         return res.status(200).json(response);
     } catch (err) {
@@ -37,9 +37,27 @@ router.get('/categories/search', async (req, res) => {
 router.post("/categories/new", async (req, res) => {
     const { name } = req.body;
     const createdBy = req.payload.user;
-    
     try {
-        let response = await Category.create({name, createdBy, tasks: [], });
+        // Fetch the user's username to use as a unique prefix
+        const user = await User.findById(createdBy);
+        const userPrefix = user.username;
+        const userPrefixName = `${userPrefix}_${name}`;
+
+        const indexes = await Category.collection.indexes();
+        const existingIndex = indexes.find(index => index.name === `name_${name}`);
+        
+        if (existingIndex) {
+            await Category.collection.dropIndex(`name_${name}`);
+        }
+
+        // Create the new category
+        let response = await Category.create({
+            userPrefixName,
+            name,
+            createdBy,
+            tasks: []
+        });
+
         return res.status(201).json(response);
     } catch(err) {
         console.log(err);
