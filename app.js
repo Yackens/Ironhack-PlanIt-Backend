@@ -28,7 +28,8 @@ app.use("/api", isAuthenticated, taskRouter);
 
 const authRouter = require("./routes/auth.routes");
 
-// Throttle authentication attempts to slow down credential bruteforcing
+// Throttle the credential endpoints (/auth/login, /auth/signup) to slow down
+// credential bruteforcing. Other /auth routes stay unthrottled.
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
@@ -37,7 +38,9 @@ const authLimiter = rateLimit({
   message: { message: "Too many attempts. Please try again later." }
 });
 
-app.use("/auth", authLimiter, authRouter);
+app.use("/auth/login", authLimiter);
+app.use("/auth/signup", authLimiter);
+app.use("/auth", authRouter);
 
 // ❗ To handle errors. Routes that don't exist or errors that you handle in specific routes
 require("./error-handling")(app);
