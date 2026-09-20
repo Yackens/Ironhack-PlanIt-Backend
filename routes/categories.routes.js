@@ -15,6 +15,9 @@ router.get('/categories', async (req, res) => {
     }
 });
 
+// Escapes regex metacharacters so user input is matched literally
+const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 // GET route ==> Search categories by name
 router.get('/categories/search', async (req, res) => {
     const userId = req.payload.user;
@@ -22,7 +25,7 @@ router.get('/categories/search', async (req, res) => {
 
     try {
         // Use a regex pattern for case-insensitive search
-        const searchPattern = new RegExp(q, 'i');
+        const searchPattern = new RegExp(escapeRegex(q || ""), "i");
 
         const response = await Category.find({createdBy: userId, name: searchPattern });
 
@@ -42,13 +45,6 @@ router.post("/categories/new", async (req, res) => {
         const user = await User.findById(createdBy);
         const userPrefix = user.username;
         const userPrefixName = `${userPrefix}_${name}`;
-
-        const indexes = await Category.collection.indexes();
-        const existingIndex = indexes.find(index => index.name === `name_${name}`);
-        
-        if (existingIndex) {
-            await Category.collection.dropIndex(`name_${name}`);
-        }
 
         // Create the new category
         let response = await Category.create({
@@ -74,9 +70,16 @@ router.put('/categories/:categoryId', async (req, res) => {
       return;
     }
     try {
-        const response =  await Category.findByIdAndUpdate(categoryId, req.body, { new: true });
+        const response = await Category.findOneAndUpdate(
+            { _id: categoryId, createdBy: req.payload.user },
+            { name: req.body.name },
+            { new: true }
+        );
+        if (!response) {
+            return res.status(404).json({ message: "Category not found" });
+        }
         return res.status(200).json(response);
-    } catch {
+    } catch (err) {
         console.log(err);
         return res.status(500).json({ message: "Internal Server Error" });
     }
@@ -91,9 +94,12 @@ router.delete('/categories/:categoryId', async (req, res) => {
       return;
     }
     try {
-        await Category.findByIdAndRemove(categoryId);
-        return res.status(204).json({message: `Category with ${categoryId} is removed successfully.` });
-    } catch {
+        const deleted = await Category.findOneAndDelete({ _id: categoryId, createdBy: req.payload.user });
+        if (!deleted) {
+            return res.status(404).json({ message: "Category not found" });
+        }
+        return res.status(204).send();
+    } catch (err) {
         console.log(err);
         return res.status(500).json({ message: "Internal Server Error" });
     }

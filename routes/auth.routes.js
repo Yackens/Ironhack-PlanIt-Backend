@@ -36,12 +36,11 @@ router.post('/login', async (req, res) => {
     }
 
     if (bcrypt.compareSync(password, foundUser.password)) {
-      const { email, username } = foundUser;
-      const payload = { email, username };
-      const authToken = jwt.sign({
-        expiresIn: "6h",
-        user: foundUser._id
-      }, process.env.TOKEN_SECRET, {algorithm: "HS256"});
+      const authToken = jwt.sign(
+        { user: foundUser._id },
+        process.env.TOKEN_SECRET,
+        { algorithm: "HS256", expiresIn: "6h" }
+      );
       return res.status(200).json({ token: authToken });
     } else {
       return res.status(400).json({ message: 'The credentials are incorrect. Please, try again.' });
@@ -55,7 +54,6 @@ router.post('/login', async (req, res) => {
 // POST route ==> to save the sign-up information
 router.post('/signup', async (req, res) => {
   const { email, password, username } = req.body;
-  console.log(req.body);
   if (!email || !password || !username) {
     res.status(400).json({ message: 'Provide all the fields, please (email, password, and username).' });
     return;
@@ -69,11 +67,11 @@ router.post('/signup', async (req, res) => {
   }
 
   // Use password required formatting
-//   const passwordRegex = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}/;
-//   if (!passwordRegex.test(password)) {
-//     res.status(400).json({ message: 'Password must have at least 6 characters and contain at least one number, one lowercase, and one uppercase letter.' });
-//     return;
-//   }
+  const passwordRegex = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}/;
+  if (!passwordRegex.test(password)) {
+    res.status(400).json({ message: 'Password must have at least 6 characters and contain at least one number, one lowercase, and one uppercase letter.' });
+    return;
+  }
 
   try {
     let userExists = await User.findOne({ username });
@@ -96,8 +94,6 @@ router.post('/signup', async (req, res) => {
 
 // GET route ==> verify you are authenticated
 router.get('/verify', isAuthenticated, async (req, res, next) => {
- 
-  console.log(`req.payload`, req.payload);
   const user = await User.findById(req.payload.user);
   const userSent = user._doc;
   delete userSent.password;

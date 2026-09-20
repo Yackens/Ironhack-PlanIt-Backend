@@ -8,8 +8,8 @@ router.get('/tasks/:categoryId', async (req, res) => {
     const userId = req.payload.user;
     const { categoryId } = req.params;
     try {
-        // Find the category by its _id
-        const category = await Category.findById(categoryId);
+        // Find the category by its _id, scoped to the requesting user
+        const category = await Category.findOne({ _id: categoryId, createdBy: userId });
 
         if (!category) {
             return res.status(404).json({ message: "Category not found" });
@@ -25,31 +25,19 @@ router.get('/tasks/:categoryId', async (req, res) => {
     }
 });
 
-// GET route ==>  Get task by Id
-router.get('/tasks/:taskId', async (req, res) => {
-    const { taskId } = req.params;
-    try {
-        // Find the category by its _id
-        const task = await Task.findById(taskId);
-
-        if (!task) {
-            return res.status(404).json({ message: "Task not found" });
-        }
-        return res.status(200).json(task);
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({ message: "Internal Server Error" });
-    }
-});
-
-
 // POST /api/tasks  -  Creates a new task
 router.post("/tasks/new", async (req, res) => {
-  const { title, description, category, dueDate, status, createdAt} = req.body;
+  const { title, description, category, dueDate, status } = req.body;
   const createdBy = req.payload.user;
 
   try {
-    let newTask = await Task.create({ title, description, dueDate, status, category, createdAt, createdBy})
+    // Only allow creating tasks inside a category the user owns
+    const ownedCategory = await Category.findOne({ _id: category, createdBy });
+    if (!ownedCategory) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
+    let newTask = await Task.create({ title, description, dueDate, status, category, createdBy})
     let updateCategory = await Category.findByIdAndUpdate(category, { $push: { tasks: newTask._id } } );
     return res.status(201).json({newTask, updateCategory});
 } catch(err) {
@@ -66,10 +54,25 @@ router.put('/tasks/:taskId', async (req, res) => {
       res.status(400).json({ message: 'Specified id is not valid' });
       return;
     }
+    // Only these fields may be updated; category and createdBy stay fixed
+    const updates = {};
+    ["title", "description", "dueDate", "status"].forEach((field) => {
+        if (req.body[field] !== undefined) {
+            updates[field] = req.body[field];
+        }
+    });
+
     try {
-        const response =  await Task.findByIdAndUpdate(taskId, req.body, { new: true });
+        const response = await Task.findOneAndUpdate(
+            { _id: taskId, createdBy: req.payload.user },
+            updates,
+            { new: true }
+        );
+        if (!response) {
+            return res.status(404).json({ message: "Task not found" });
+        }
         return res.status(200).json(response);
-    } catch {
+    } catch (err) {
         console.log(err);
         return res.status(500).json({ message: "Internal Server Error" });
     }
@@ -83,20 +86,16 @@ router.delete('/tasks/:taskId', async (req, res) => {
         return;
     }
     try {
-        // Find the task to be deleted
-        const task = await Task.findById(taskId);
+        // Delete the task, but only if it belongs to the requesting user
+        const task = await Task.findOneAndDelete({ _id: taskId, createdBy: req.payload.user });
         if (!task) {
             return res.status(404).json({ message: "Task not found" });
         }
-        // Remove task reference from category
-        const category = await Category.findByIdAndUpdate(task.category, { $pull: { tasks: task._id } });
-        if (!category) {
-            return res.status(404).json({ message: "Category not found" });
-        }
 
-        // Delete the task
-        await Task.findByIdAndRemove(taskId);
-        return res.status(204).json({ message: `Task with ID ${taskId} is removed successfully.` });
+        // Remove task reference from category
+        await Category.findByIdAndUpdate(task.category, { $pull: { tasks: task._id } });
+
+        return res.status(204).send();
     } catch (err) {
         console.log(err);
         return res.status(500).json({ message: "Internal Server Error" });

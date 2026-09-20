@@ -8,6 +8,7 @@ require("./db");
 // Handles http requests (express is node js framework)
 // https://www.npmjs.com/package/express
 const express = require("express");
+const rateLimit = require("express-rate-limit");
 const { isAuthenticated } = require("./middleware/jwt.middleware");
 
 const app = express();
@@ -26,7 +27,17 @@ const taskRouter = require("./routes/tasks.routes");
 app.use("/api", isAuthenticated, taskRouter);   
 
 const authRouter = require("./routes/auth.routes");
-app.use("/auth", authRouter);
+
+// Throttle authentication attempts to slow down credential bruteforcing
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many attempts. Please try again later." }
+});
+
+app.use("/auth", authLimiter, authRouter);
 
 // ❗ To handle errors. Routes that don't exist or errors that you handle in specific routes
 require("./error-handling")(app);
